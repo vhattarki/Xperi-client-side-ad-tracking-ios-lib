@@ -103,6 +103,16 @@ public class AdBeaconingSession: ObservableObject {
     public init() {
         self.playerObserver.setSession(self)
     }
+
+    // Function to set session info manually if needed
+    // This is useful we don't have mediaURL, and instead we have manifestUrl and adTrackingMetadataUrl
+    // e.g. when we want to use SDK only for ad tracking, and not for media playback.
+    public func setSessionInfo(manifestUrl: String, adTrackingMetadataUrl: String, mediaUrl: String = "") {
+        sessionInfo = SessionInfo(localSessionId: Date().ISO8601Format(),
+                                  mediaUrl: mediaUrl,
+                                  manifestUrl: manifestUrl,
+                                  adTrackingMetadataUrl: adTrackingMetadataUrl)
+    }
     
     public func reload(with urlString: String, isAutomaticallyPreservesTimeOffsetFromLive: Bool) {
         guard let url = URL(string: urlString) else { return }
