@@ -83,7 +83,7 @@ public struct Utility {
         return InitResponse(manifestUrl: manifestUrl, trackingUrl: trackingUrl)
     }
     
-    static func rewriteToMetadataUrl(from url: String) -> String {
+    public static func rewriteToMetadataUrl(from url: String) -> String {
         return url.replacingOccurrences(of: "\\/[^\\/?]+(\\??[^\\/]*)$",
                                         with: "/\(AD_TRACKING_METADATA_FILE_NAME)$1",
                                         options: .regularExpression)
