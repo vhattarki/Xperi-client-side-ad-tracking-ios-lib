@@ -215,38 +215,26 @@ class BeaconSender {
                     Utility.log("\(customHeaders.count) Custom headers available for beaconing", to: session, level: .debug, with: Self.logger)
                 }
 
-                for urlString in trackingEvent.signalingUrls {
-                    guard let url = URL(string: urlString) else {
-                        throw HarmonicAdTrackerError.beaconError("Invalid signaling url: \(urlString)")
-                    }
-                    
-                    var request = URLRequest(url: url)
-                    // Add custom headers if any
-                    for (key, value) in customHeaders {
-                        request.setValue(value, forHTTPHeaderField: key)
-                    }
-                    
+                // Old code that was commented out for supporting custom headers
+               for urlString in trackingEvent.signalingUrls {
                     group.addTask {
+                        guard let url = URL(string: urlString) else {
+                            throw HarmonicAdTrackerError.beaconError("Invalid signaling url: \(urlString)")
+                        }
+
+                        var request = URLRequest(url: url)
+                        // Add custom headers if any
+                        for (key, value) in customHeaders {
+                            request.setValue(value, forHTTPHeaderField: key)
+                        }
+
                         let (data, response) = try await URLSession.shared.data(for: request)
                         guard let httpResponse = response as? HTTPURLResponse else {
                             throw HarmonicAdTrackerError.beaconError("Invalid URLResponse for url: \(urlString)")
                         }
                         return (urlString, httpResponse)
                     }
-
-                // Old code that was commented out for supporting custom headers
-               /*for urlString in trackingEvent.signalingUrls {
-                    group.addTask {
-                        guard let url = URL(string: urlString) else {
-                            throw HarmonicAdTrackerError.beaconError("Invalid signaling url: \(urlString)")
-                        }
-                        let (_, response) = try await URLSession.shared.data(from: url)
-                        guard let httpResponse = response as? HTTPURLResponse else {
-                            throw HarmonicAdTrackerError.beaconError("Invalid URLResponse for url: \(urlString)")
-                        }
-                        return (urlString, httpResponse)
-                    }
-                }*/
+                }
                 
                 for try await (urlString, response) in group {
                     if !(200...299 ~= response.statusCode) {
@@ -256,7 +244,6 @@ class BeaconSender {
                 }
                 
             })
-            
             trackingEvent.reportingState = .done
         } catch HarmonicAdTrackerError.beaconError(let errorMessage) {
             Utility.log("Failed to send beacon; the error message is: \(errorMessage)", to: session, level: .error, with: Self.logger)
