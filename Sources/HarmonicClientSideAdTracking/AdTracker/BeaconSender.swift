@@ -206,7 +206,36 @@ class BeaconSender {
                                             returning: Void.self,
                                             body: { group in
                 
+                // Add custom headers to the beaconing requests if any
+                let customHeaders: [String: String] = self.session.customHeadersForBeaconing
+
+                if customHeaders.isEmpty {
+                    Utility.log("No custom headers available for beaconing", to: session, level: .debug, with: Self.logger)
+                } else {
+                    Utility.log("\(customHeaders.count) Custom headers available for beaconing", to: session, level: .debug, with: Self.logger)
+                }
+
                 for urlString in trackingEvent.signalingUrls {
+                    guard let url = URL(string: urlString) else {
+                        throw HarmonicAdTrackerError.beaconError("Invalid signaling url: \(urlString)")
+                    }
+                    
+                    var request = URLRequest(url: url)
+                    // Add custom headers if any
+                    for (key, value) in customHeaders {
+                        request.setValue(value, forHTTPHeaderField: key)
+                    }
+                    
+                    group.addTask {
+                        let (data, response) = try await URLSession.shared.data(for: request)
+                        guard let httpResponse = response as? HTTPURLResponse else {
+                            throw HarmonicAdTrackerError.beaconError("Invalid URLResponse for url: \(urlString)")
+                        }
+                        return (urlString, httpResponse)
+                    }
+
+                // Old code that was commented out for supporting custom headers
+               /*for urlString in trackingEvent.signalingUrls {
                     group.addTask {
                         guard let url = URL(string: urlString) else {
                             throw HarmonicAdTrackerError.beaconError("Invalid signaling url: \(urlString)")
@@ -217,7 +246,7 @@ class BeaconSender {
                         }
                         return (urlString, httpResponse)
                     }
-                }
+                }*/
                 
                 for try await (urlString, response) in group {
                     if !(200...299 ~= response.statusCode) {

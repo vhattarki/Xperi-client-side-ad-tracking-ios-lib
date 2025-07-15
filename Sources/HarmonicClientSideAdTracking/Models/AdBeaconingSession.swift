@@ -100,6 +100,11 @@ public class AdBeaconingSession: ObservableObject {
     
     var latestPlayhead: Double = 0
     
+    // Custom headers for beaconing
+    // This is useful when we want to add custom headers to the beaconing requests made by the `BeaconSender`.
+    // e.g. when we want to add IP-address headers or other custom headers.
+    var customHeadersForBeaconing: [String: String] = [:]
+    
     public init() {
         self.playerObserver.setSession(self)
     }
@@ -112,6 +117,13 @@ public class AdBeaconingSession: ObservableObject {
                                   mediaUrl: mediaUrl,
                                   manifestUrl: manifestUrl,
                                   adTrackingMetadataUrl: adTrackingMetadataUrl)
+    }
+
+    // Function to set custom headers for beaconing
+    // This is useful when we want to set custom headers to the beaconing requests made by the `BeaconSender`.
+    // e.g. when we want to add IP-address headers or other custom headers.
+    public func setCustomHeadersForBeaconing(headers: [String: String]) {
+        customHeadersForBeaconing = headers
     }
     
     public func reload(with urlString: String, isAutomaticallyPreservesTimeOffsetFromLive: Bool) {
