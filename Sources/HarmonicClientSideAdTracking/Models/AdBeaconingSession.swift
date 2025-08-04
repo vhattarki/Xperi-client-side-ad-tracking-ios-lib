@@ -75,7 +75,7 @@ public class AdBeaconingSession: ObservableObject {
         }
     }
     
-    @Published public internal(set) var sessionInfo = SessionInfo()
+    @Published public (set) var sessionInfo = SessionInfo()
     @Published public internal(set) var adPods: [AdBreak] = []
     @Published public internal(set) var latestDataRange: DataRange?
     @Published public internal(set) var playedTimeOutsideDataRange: [DataRange] = []
